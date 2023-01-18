@@ -22,7 +22,9 @@ except FileNotFoundError:
         f.write("TOKEN_HERE")
 
 intents = discord.Intents.all()
+
 client = commands.Bot(command_prefix=commands.when_mentioned_or(prefix), intents=intents, activity=discord.Game("Music go!"), status=discord.Status.online)
+client.remove_command('help')
 
 dis_status = ['waiting for you', "Music... Music everywhere", "github : https://github.com/ThePhoenix78/Music-Bot-Discord"]
 
@@ -64,7 +66,7 @@ playing_msg = "Playing: {} [{}]"
 help_msg = """
 `/!\\ IMPORTANT NOTE! this bot will load all the musics he know containing the keys words and set it as a playlist /!\\`
 
->>> Commands
+>>> **Commands**
 
 > Music <
 
@@ -336,6 +338,11 @@ timer = time.time()
 async def ver(ctx):
     value = int(time.time()-timer)
     await ctx.send(f"version : {version}\nping : {round(client.latency * 1000)}ms :ping_pong:\ntime up : {convert_time(value)}")
+
+
+@client.command(aliases=["help"])
+async def h(ctx):
+    await ctx.send(help_msg)
 
 
 @client.command(pass_context=True, aliases=["p"])
