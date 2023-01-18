@@ -32,10 +32,9 @@ serv_list: dict = {}
 base_path = os.getcwd().replace("\\", "/")
 
 music_dir = f"{base_path}/Musique"
-playlist_dir = f"{music_dir}/playlists"
-down_dir = f"{music_dir}/random"
+down_dir = f"{music_dir}/download"
 
-val = [music_dir, playlist_dir, down_dir]
+val = [music_dir, down_dir]
 
 for name in val:
     Path(name).mkdir(exist_ok=True)
