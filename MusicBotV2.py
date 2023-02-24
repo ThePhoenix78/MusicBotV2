@@ -57,6 +57,7 @@ volume_msg = "Volume set on {}"
 resume_msg = "Resumed music"
 result_msg = "{} results found"
 restart_msg = "Restarting bot"
+loop_msg = "Loop set on {}"
 stop_msg = "Music stopped"
 join_msg = "Joined {}"
 added_msg = "Added {}"
@@ -82,6 +83,7 @@ help_msg = """
 - vol (int) : will change the volume of the bot
 - w / what : will show the the informations about the music
 - sf / sendfile : will send the music as a mp3 format
+- loop: will play the music in loop or stop it (False by default)
 """
 
 
@@ -244,6 +246,7 @@ class MusicManager(Playlists):
 
         current.guild = ctx
         current.volume = 1.0
+        current.loop = False
 
 
 playlists = MusicManager()
@@ -273,11 +276,13 @@ def convert_time(value):
     return message
 
 
-@playlists.event("music_over")
+@playlists.on_music_over()
 def music_over(data):
     print(f"[{data.playlist.name}] {data.music.name} is over, next song now!")
-    data.playlist.next()
-    music_player(data.playlist)
+
+    if data.playlist.loop:
+        data.playlist.next()
+        music_player(data.playlist)
 
 # -----------------------------EVENTS--------------------------------
 
@@ -442,6 +447,13 @@ async def previous(ctx):
     a = serv.previous()
     music_player(serv)
     await ctx.send(playing_msg.format(serv.current.name, convert_time(serv.current.length)))
+
+
+@client.command()
+async def loop(ctx):
+    serv = playlists.get_playlist(ctx.guild.id)
+    serv.loop = not serv.loop
+    await ctx.send(loop_msg.format(serv.loop))
 
 
 @client.command(pass_context=True, aliases=["volume"])
