@@ -10,15 +10,15 @@ from discord.utils import get
 from pathlib import Path
 
 
-version = "2.0.0"
+version = "2.0.1"
 prefix = "-"
 
 bot_token = ""
 try:
-    with open("bot_token", "r") as f:
+    with open("musicbot_token", "r") as f:
         bot_token = f.readlines()[0].strip()
 except FileNotFoundError:
-    with open("bot_token", "w") as f:
+    with open("musicbot_token", "w") as f:
         f.write("TOKEN_HERE")
 
 intents = discord.Intents.all()
@@ -26,15 +26,15 @@ intents = discord.Intents.all()
 client = commands.Bot(command_prefix=commands.when_mentioned_or(prefix), intents=intents, activity=discord.Game("Music go!"), status=discord.Status.online)
 client.remove_command('help')
 
-dis_status = ['waiting for you', "Music... Music everywhere", "github : https://github.com/ThePhoenix78/Music-Bot-Discord"]
+dis_status = ['waiting for you', "Music... Music everywhere", "github : https://github.com/ThePhoenix78/Music-Bot-Discord", "-help for help"]
 
 
 serv_list: dict = {}
 
 base_path = os.getcwd().replace("\\", "/")
 
-music_dir = f"{base_path}/Musique"
-down_dir = f"{music_dir}/download"
+music_dir = f"{base_path}/video/Musique"
+down_dir = f"{music_dir}/download_music"
 
 val = [music_dir, down_dir]
 
@@ -83,7 +83,7 @@ help_msg = """
 - vol (int) : will change the volume of the bot
 - w / what : will show the the informations about the music
 - sf / sendfile : will send the music as a mp3 format
-- loop: will play the music in loop or stop it (False by default)
+- loop: will play the music in loop or stop it (True by default)
 """
 
 
@@ -246,7 +246,7 @@ class MusicManager(Playlists):
 
         current.guild = ctx
         current.volume = 1.0
-        current.loop = False
+        current.loop = True
 
 
 playlists = MusicManager()
@@ -267,11 +267,11 @@ def music_player(serv):
 
 def convert_time(value):
     val2, val = int(value//60), int(value % 60)
-    message = f"{val2}min {val}s."
+    message = f"{val2}:{val}"
 
     if val2 > 60:
         val3, val2 = int(val2//60), int(val2 % 60)
-        message = f"{val3}h {val2}min {val}s."
+        message = f"{val3}:{val2}:{val}"
 
     return message
 
@@ -348,6 +348,19 @@ async def ver(ctx):
 @client.command(aliases=["help"])
 async def h(ctx):
     await ctx.send(help_msg)
+
+
+@client.command()
+async def guilds(ctx):
+    server = client.guilds
+    gui = "```\n"
+
+    for serv in server:
+        gui += f"{serv}\n"
+
+    gui += "```"
+
+    await ctx.send(gui)
 
 
 @client.command(pass_context=True, aliases=["p"])
