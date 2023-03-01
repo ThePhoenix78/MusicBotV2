@@ -10,7 +10,7 @@ from discord.utils import get
 from pathlib import Path
 
 
-version = "2.1.0"
+version = "2.1.1"
 prefix = "-"
 
 bot_token = ""
@@ -49,8 +49,8 @@ argument_msg_error = 'Please pass in all required arguments'
 heavy_file_msg = "The file : {} is too heavy"
 connection_msg = "The bot is connected to {}"
 send_file_msg = "Sending file {}"
-get_ready_msg = "Getting everything ready now"
-msgnofound = "Error! No music was found locally!"
+get_ready_msg = "Getting everything ready now (Downloading music...)"
+msg_no_found = "Error! No music was found locally!"
 failed_stop = "No music playing failed to stop"
 pause_msg = "Music paused!"
 volume_msg = "Volume set on {}"
@@ -90,7 +90,9 @@ help_msg = """
 # ----------------------------SEARCH ENGINE-------------------------------
 
 def convert_request(elem: str):
+    print(elem)
     res_convert = 0
+
     if " || " in elem:
         elem = elem.split("||")
         for i in range(len(elem)):
@@ -407,7 +409,7 @@ async def play(ctx, *, music: str):
     search = get_music(music)
 
     if not search:
-        await ctx.send(msgnofound)
+        await ctx.send(msg_no_found)
         return
 
     serv.add_music(search)
@@ -512,7 +514,7 @@ async def add(ctx, *, music):
     search = get_music(music)
 
     if not search:
-        await ctx.send(msgnofound)
+        await ctx.send(msg_no_found)
         return
 
     shuffle(search)
@@ -629,7 +631,7 @@ async def sf(ctx, *, music: str):
     search = get_music(music)
 
     if not search:
-        await ctx.send(msgnofound)
+        await ctx.send(msg_no_found)
         return
 
     b = choice(search)
