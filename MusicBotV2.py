@@ -10,35 +10,35 @@ from discord.utils import get
 from pathlib import Path
 
 
-version = "2.0.1"
+version = "2.1.0"
 prefix = "-"
 
 bot_token = ""
-try:
-    with open("musicbot_token", "r") as f:
-        bot_token = f.readlines()[0].strip()
-except FileNotFoundError:
-    with open("musicbot_token", "w") as f:
-        f.write("TOKEN_HERE")
 
+if not bot_token:
+    try:
+        with open("musicbot_token", "r") as f:
+            bot_token = f.readlines()[0].strip()
+    except FileNotFoundError:
+        with open("musicbot_token", "w") as f:
+            f.write("TOKEN_HERE")
+        input("Please put your discord bot token in musicbot_token file")
+        quit()
+
+# intents = discord.Intents.default() can also work
 intents = discord.Intents.all()
 
 client = commands.Bot(command_prefix=commands.when_mentioned_or(prefix), intents=intents, activity=discord.Game("Music go!"), status=discord.Status.online)
 client.remove_command('help')
 
-dis_status = ['waiting for you', "Music... Music everywhere", "github : https://github.com/ThePhoenix78/Music-Bot-Discord", "-help for help"]
-
-
-serv_list: dict = {}
+dis_status = ['waiting for you', "Music... Music everywhere", "https://github.com/ThePhoenix78/MusicBotV2", "-help for help"]
 
 base_path = os.getcwd().replace("\\", "/")
 
-music_dir = f"{base_path}/video/Musique"
-down_dir = f"{music_dir}/download_music"
+music_dir = f"{base_path}/Music"
+down_dir = f"{music_dir}/download"
 
-val = [music_dir, down_dir]
-
-for name in val:
+for name in [music_dir, down_dir]:
     Path(name).mkdir(exist_ok=True)
 
 
@@ -83,7 +83,7 @@ help_msg = """
 - vol (int) : will change the volume of the bot
 - w / what : will show the the informations about the music
 - sf / sendfile : will send the music as a mp3 format
-- loop: will play the music in loop or stop it (True by default)
+- loop: will set the playlist on loop (True by default)
 """
 
 
@@ -280,9 +280,12 @@ def convert_time(value):
 def music_over(data):
     print(f"[{data.playlist.name}] {data.music.name} is over, next song now!")
 
-    if data.playlist.loop:
-        data.playlist.next()
-        music_player(data.playlist)
+    data.playlist.is_over():
+        if data.playlist.loop:
+            data.playlist.next()
+            music_player(data.playlist)
+        else:
+            data.playlist.clear()
 
 # -----------------------------EVENTS--------------------------------
 
@@ -303,9 +306,14 @@ async def on_ready():
 @client.event
 async def on_guild_join(ctx):
     servers = client.guilds
+    add = True
     for server in servers:
-        if server not in playlists.get_playlist(server.id):
-            playlists.add_guild(server)
+        if playlists.get_playlist(server.id):
+            add = False
+            break
+
+    if add:
+        playlists.add_guild(server)
 
 
 @client.event
@@ -404,7 +412,7 @@ async def play(ctx, *, music: str):
 
     serv.add_music(search)
     music_player(serv)
-    await ctx.send(playing_msg.format(serv.current.name, convert_time(serv.current.length)))
+    await ctx.send(playing_msg.format(serv.current.name, serv.current.duration))
 
 
 @client.command()
@@ -451,7 +459,7 @@ async def next(ctx):
     serv = playlists.get_playlist(ctx.guild.id)
     serv.next()
     music_player(serv)
-    await ctx.send(playing_msg.format(serv.current.name, convert_time(serv.current.length)))
+    await ctx.send(playing_msg.format(serv.current.name, serv.current.duration))
 
 
 @client.command()
@@ -459,7 +467,7 @@ async def previous(ctx):
     serv = playlists.get_playlist(ctx.guild.id)
     a = serv.previous()
     music_player(serv)
-    await ctx.send(playing_msg.format(serv.current.name, convert_time(serv.current.length)))
+    await ctx.send(playing_msg.format(serv.current.name, serv.current.duration))
 
 
 @client.command()
@@ -487,14 +495,14 @@ async def vol(ctx, nb):
 async def replay(ctx):
     serv = playlists.get_playlist(ctx.guild.id)
     music_player(serv)
-    await ctx.send(playing_msg.format(serv.current.name, convert_time(serv.current.length)))
+    await ctx.send(playing_msg.format(serv.current.name, serv.current.duration))
 
 
 @client.command(aliases=["w"])
 async def what(ctx):
     serv = playlists.get_playlist(ctx.guild.id)
-    val = serv.current.timer if serv.current.timer > 0 else 0
-    await ctx.send(f"Music : {serv.current.name} [{int(val/60)} : {int(val % 60)}/{convert_time(serv.current.length)}]")
+    val = serv.current.convert_time(serv.current.timer)
+    await ctx.send(f"Music : {serv.current.name} [{val}/{serv.current.duration}]")
 
 
 @client.command()
