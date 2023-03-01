@@ -280,7 +280,7 @@ def convert_time(value):
 def music_over(data):
     print(f"[{data.playlist.name}] {data.music.name} is over, next song now!")
 
-    data.playlist.is_over():
+    if data.playlist.is_over():
         if data.playlist.loop:
             data.playlist.next()
             music_player(data.playlist)
