@@ -205,7 +205,8 @@ def download_url(url):
                 os.system('move /Y {} {}'.format(f'"{name}"', f'{down_dir}/"{name}"'))
                 break
 
-        url = f'{name}'
+        url = name
+
     return url
 
 
@@ -214,12 +215,26 @@ def search_internet_music(music_name):
     formatUrl = urllib.request.urlopen("https://www.youtube.com/results?" + query_string)
 
     search_results = re.findall(r"watch\?v=(\S{11})", formatUrl.read().decode())
-    clip2 = "https://www.youtube.com/watch?v=" + "{}".format(search_results[0])
-    return download_url(clip2)
+    clip2 = "https://www.youtube.com/watch?v={}".format(search_results[0])
+
+    data = None
+
+    while not data:
+        try:
+            data = download_url(clip2)
+        except Exception:
+            data = None
+
+    return data
 
 
-def get_music(music):
-    music = download_url(music)
+def get_music(music_name):
+    music = None
+    while not music:
+        try:
+            music = download_url(music_name)
+        except Exception:
+            music = None
 
     elem, res_convert = convert_request(music)
     search = search_file(elem, res_convert)
@@ -288,6 +303,14 @@ def music_over(data):
             music_player(data.playlist)
         else:
             data.playlist.clear()
+
+    elif data.playlist.loop:
+        data.playlist.update()
+        music_player(data.playlist)
+
+    else:
+        data.playlist.next()
+        music_player(data.playlist)
 
 # -----------------------------EVENTS--------------------------------
 
